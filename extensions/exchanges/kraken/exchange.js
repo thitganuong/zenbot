@@ -38,19 +38,6 @@ module.exports = function container(get, set, clear) {
     return product_id.split('-')[0] + product_id.split('-')[1]
   }
 
-  // This is to deal with a silly bug where kraken doesn't use a consistent definition for currency
-  // with certain assets they will mix the use of 'Z' and 'X' prefixes
-  function joinProductFormatted(product_id) {
-    var asset = product_id.split('-')[0]
-    var currency = product_id.split('-')[1]
-
-    var assetsToFix = ['BCH', 'DASH', 'EOS', 'GNO']
-    if (assetsToFix.indexOf(asset) >= 0 && currency.length > 3) {
-      currency = currency.substring(1)
-    }
-    return asset + currency;
-  }
-
   function retry(method, args, error) {
     if (error.message.match(/API:Rate limit exceeded/)) {
       var timeout = 10000
@@ -90,10 +77,7 @@ module.exports = function container(get, set, clear) {
       var func_args = [].slice.call(arguments)
       var client = publicClient()
       var args = {
-        pair: joinProductFormatted(opts.product_id)
-      }
-      if (opts.from) {
-        args.since = Number(opts.from) * 1000000
+        pair: joinProduct(opts.product_id)
       }
 
       client.api('Trades', args, function(error, data) {
@@ -107,6 +91,9 @@ module.exports = function container(get, set, clear) {
         }
         if (data.error.length) {
           return cb(data.error.join(','))
+        }
+        if (opts.from) {
+          args.since = Number(opts.from) * 1000000000
         }
 
         var trades = []
@@ -168,7 +155,7 @@ module.exports = function container(get, set, clear) {
     getQuote: function(opts, cb) {
       var args = [].slice.call(arguments)
       var client = publicClient()
-      var pair = joinProductFormatted(opts.product_id)
+      var pair = joinProduct(opts.product_id)
       client.api('Ticker', {
         pair: pair
       }, function(error, data) {
@@ -219,7 +206,7 @@ module.exports = function container(get, set, clear) {
       var args = [].slice.call(arguments)
       var client = authedClient()
       var params = {
-        pair: joinProductFormatted(opts.product_id),
+        pair: joinProduct(opts.product_id),
         type: type,
         ordertype: (opts.order_type === 'taker' ? 'market' : 'limit'),
         volume: opts.size,

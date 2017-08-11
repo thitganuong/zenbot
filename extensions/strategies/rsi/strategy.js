@@ -168,7 +168,7 @@ module.exports = function container (get, set, clear) {
         // }
         console.log(('\ns.options.onEma ' + s.options.onEma).red)
         if(s.options.onEma == false){
-          if(s.options.countPeriod <= 47){
+          if(s.options.countPeriod <= s.options.countPeriodConstant){//40
           s.options.countPeriod = s.options.countPeriod+ 1
             console.log(('\ns.options.countPeriod ' + s.options.countPeriod).red)
           }else {
@@ -223,7 +223,7 @@ module.exports = function container (get, set, clear) {
         
 //overbought chạy ema 
         if(s.options.onEma) {
-          if ((/*s.trend === 'long' ||*/ s.trend === 'short') && s.period.rsi >= 51 && s.period.trend_ema_rate > s.period.trend_ema_stddev) {
+          if ((/*s.trend === 'long' ||*/ s.trend === 'short') /*&& s.period.rsi >= 51*/ && s.period.trend_ema_rate > s.period.trend_ema_stddev) {
         	  	if (s.options.onEmaOverbought){
         	  		console.log(('\nEMA ovb s.options.trendEma truoc : ' +s.options.trendEma).red)
 	            if (s.options.trendEma !== 'up') {
