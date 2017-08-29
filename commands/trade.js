@@ -73,7 +73,15 @@ module.exports = function container (get, set, clear) {
         if (!so.order_type in order_types || !so.order_type) {
           so.order_type = 'maker'
         }
-
+		so.keep = false
+		so.NeedRSI = false
+        so.lowestPrice = 0
+        so.willBuyAt = 0
+        so.willSellAt = 0
+        so.lastBuy = 0
+        so.lastSell = 0
+        so.diff = 0 
+        so.currentTrend = ''
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)
@@ -179,6 +187,174 @@ module.exports = function container (get, set, clear) {
                         else if ((key === 'm' || key === 'M') && !info.ctrl) {
                           so.manual = !so.manual
                           console.log('\nmanual mode: ' + (so.manual ? 'ON' : 'OFF') + '\n')
+                        }
+                        else if ((key === 'k' || key === 'K') && !info.ctrl) {
+                          so.keep = !so.keep
+                          console.log('\nKeep mode: ' + (so.keep ? 'ON' : 'OFF'))
+                        }
+                        else if ((key === 'k' || key === 'K') && !info.ctrl) {
+                          so.keep = !so.keep
+                          console.log('\nKeep mode test: ' + (so.keep ? 'ON' : 'OFF') + '\n')
+                        } else if ((key === 'n' || key === 'N') && !info.ctrl) {
+                          so.NeedRSI = !so.NeedRSI
+                          console.log('\nNeedRSI mode test: ' + (so.NeedRSI ? 'ON' : 'OFF') + '\n')
+                        }
+                        else if((key === 'o' || key === 'O') && !info.ctrl) {
+                          console.log('\n1.so.buy_pct: ' +  so.buy_pct)
+                          console.log('2.so.sell_pct: ' +  so.sell_pct)
+                          console.log('3.so.profit_stop_enable_pct: ' +  so.profit_stop_enable_pct)
+                          console.log('4.so.profit_stop_pct: ' +  so.profit_stop_pct)
+                          console.log('5.so.buy_stop_pct: ' +  so.buy_stop_pct)
+                          console.log('6.so.sell_stop_pct: ' +  so.sell_stop_pct)
+                          console.log('7.so.rsi_divisor: ' +  so.rsi_divisor)
+                          console.log('8.so.rsi_recover: ' +  so.rsi_recover)
+                          console.log('9.so.trend: ' +  so.trend)
+                          console.log('0.so.rsi_low: ' +  so.rsi_low)
+                          console.log('`.so.rsi_high: ' +  so.rsi_high)
+                          console.log('-----------------------')
+                          console.log('Last buy at: ' +  so.lastBuy)
+                          console.log('Will sell at: ' +  so.willSellAt)
+                          console.log('LastSell at: ' +  so.lastSell)
+                          console.log('Will buy at: ' +  so.willBuyAt)
+                          console.log('Diff: ' + so.diff)
+                          console.log('Current trend: ' +so.currentTrend)
+                        }
+
+                        else if ((key === '1' || key === '1') && !info.ctrl) {
+                          so.menu = 1
+                        }
+                        else if ((key === '2' || key === '2') && !info.ctrl) {
+                          so.menu = 2
+                        }
+                        else if ((key === '3' || key === '3') && !info.ctrl) {
+                          so.menu = 3
+                        }
+                        else if ((key === '4' || key === '4') && !info.ctrl) {
+                          so.menu = 4
+                        }
+                        else if ((key === '5' || key === '5') && !info.ctrl) {
+                          so.menu = 5
+                        }
+                        else if ((key === '6' || key === '6') && !info.ctrl) {
+                          so.menu = 6
+                        }
+                        else if ((key === '7' || key === '7') && !info.ctrl) {
+                          so.menu = 7
+                        }
+                        else if ((key === '8' || key === '8') && !info.ctrl) {
+                          so.menu = 8
+                        }
+                        else if ((key === '9' || key === '9') && !info.ctrl) {
+                          so.menu = 9
+                        }
+                        else if ((key === '0' || key === '0') && !info.ctrl) {
+                          so.menu = 0
+                        }
+                        else if ((key === '`' || key === '`') && !info.ctrl) {
+                          so.menu = '`'
+                        }
+                        else if ((key === '=' || key === '=') && !info.ctrl) {
+                          if(so.menu == 1){
+                              if(so.buy_pct === undefined) so.buy_pct = 0
+                              so.buy_pct += 0.1
+                          } else if(so.menu == 2){
+                              if(so.buy_pct === undefined) so.sell_pct = 0
+                              so.sell_pct += 0.1
+                          }else if(so.menu == 3){
+                            so.profit_stop_enable_pct += 0.1
+                          }else if(so.menu == 4){
+                            if(so.profit_stop_pct === undefined) so.profit_stop_pct = 0
+                            so.profit_stop_pct += 0.1
+                          }else if(so.menu == 5){
+                            if(so.buy_stop_pct === undefined) so.buy_stop_pct = 0
+                            so.buy_stop_pct += 0.1
+                          }else if(so.menu == 6){
+                            if(so.sell_stop_pct === undefined) so.sell_stop_pct = 0
+                            so.sell_stop_pct += 0.1
+                          }else if(so.menu == 7){
+                            if(so.rsi_divisor === undefined) so.rsi_divisor = 2
+                            so.rsi_divisor += 0.1
+                          }else if(so.menu == 8){
+                            if(so.rsi_recover === undefined) so.rsi_recover = 3
+                            so.rsi_recover += 1
+                          }
+                          else if(so.menu == 9){
+                            if(so.trendNo === undefined) so.trendNo = 0
+                            so.trendNo +=1
+                              if(so.trendNo == 1){
+                                so.trend = 'oversold'
+                                so.rsi_low = 29
+                              } else if(so.trendNo == 2){
+                                so.trend = 'overbought'
+                                so.rsi_high = 85
+                                so.rsi_low = 29
+                              }else if(so.trendNo == 3){
+                                so.trend = 'long'
+                                so.rsi_high = 40
+                                so.rsi_low = 29
+                              }else if(so.trendNo == 4){
+                                so.trend = 'short'
+                                so.rsi_high = 85
+                                so.rsi_low = 29
+                              } else if (so.trendNo > 4) {
+                                so.trendNo = 0
+                                so.rsi_low = 25
+                              }
+                          }else if(so.menu == 0){
+                            if(so.rsi_low == undefined) so.rsi_low = 30
+                            so.rsi_low += 1
+                          }else if(so.menu == '`') {
+                            if (so.rsi_high == undefined) so.rsi_high = 50
+                            so.rsi_high += 1
+                          }
+                        }
+                        else if ((key === '-' || key === '-') && !info.ctrl) {
+                          if(so.menu == 1){
+                            if(so.buy_pct === undefined) so.buy_pct = 0
+                            so.buy_pct -= 0.1
+                          } else if(so.menu == 2){
+                            if(so.buy_pct === undefined) so.sell_pct = 0
+                            so.sell_pct -= 0.1
+                          }else if(so.menu == 3){
+                            so.profit_stop_enable_pct -= 0.1
+                          }else if(so.menu == 4){
+                            if(so.profit_stop_pct === undefined) so.profit_stop_pct = 0
+                            so.profit_stop_pct -= 0.1
+                          }else if(so.menu == 5){
+                            if(so.buy_stop_pct === undefined) so.buy_stop_pct = 0
+                            so.buy_stop_pct -= 0.1
+                          }else if(so.menu == 6){
+                            if(so.sell_stop_pct === undefined) so.sell_stop_pct = 0
+                            so.sell_stop_pct -= 0.1
+                          }else if(so.menu == 7){
+                            if(so.rsi_divisor === undefined) so.rsi_divisor = 2
+                            so.rsi_divisor -= 0.1
+                          }else if(so.menu == 8){
+                            if(so.rsi_recover === undefined) so.rsi_recover = 3
+                            so.rsi_recover -= 1
+                          }
+                          else if(so.menu == 9){
+                            if(so.trendNo === undefined) so.trendNo = 0
+                            so.trendNo -=1
+                            if(so.trendNo == 1){
+                              so.trend = 'oversold'
+                            } else if(so.trendNo == 2){
+                              so.trend = 'overbought'
+                            }else if(so.trendNo == 3){
+                              so.trend = 'long'
+                            }else if(so.trendNo == 4){
+                              so.trend = 'short'
+                            } else if(so.trendNo > 4){
+                              so.trendNo = 0
+                            }
+
+                          }else if(so.menu == 0){
+                            if(so.rsi_low === undefined) so.rsi_low = 30
+                            so.rsi_low -= 1
+                          }else if(so.menu == '`') {
+                            if (so.rsi_high === undefined) so.rsi_high = 50
+                            so.rsi_high -= 1
+                          }
                         }
                         else if (info.name === 'c' && info.ctrl) {
                           // @todo: cancel open orders before exit

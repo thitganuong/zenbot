@@ -22,8 +22,43 @@ module.exports = function container (get, set, clear) {
     },
 
     onPeriod: function (s, cb) {
+	if (typeof s.period.rsi === 'number') {
+		if(s.trend === undefined){
+          s.trend = s.options.trend
+          s.rsi_low = s.options.rsi_low
+		  console.log('\nDefault rsi_low  was set to: ' + (s.rsi_low ) + '')
+		  s.rsi_high = s.options.rsi_high
+		  console.log('Default rsi_high was set to: ' + (s.rsi_high) + '')
+          console.log('Default trend was set to: ' + (s.trend) + '')
+        }
+        if(s.options.NeedRSI == true){
+			s.rsi_low = s.options.rsi_low
+			console.log('s.rsi_low  set to: ' + (s.rsi_low ) + '')
+			s.rsi_high = s.options.rsi_high
+			console.log('s.rsi_high was set to: ' + (s.rsi_high) + '')
+		}
+	}
       if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
+		if (s.trend === 'short') {
+			if(s.signal === 'sell'){
+			  if (so.options.diff >= 2.2 && s.period.rsi >=53 && s.period.rsi<= 55){
+				s.trend = 'short'
+				s.signal = 'buy'
+			  }
+		   } else if(s.signal === 'buy'){
+			  if (so.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
+				s.trend = 'short'
+				s.signal = 'sell'
+			  } else if(so.options.diff > 0 && so.options.diff <3 &&  s.period.rsi > 60 &&  s.period.rsi < 70 ){ //uptrend len rsi 70 short sell ngat loi
+				 s.trend = 'short'
+				s.signal = 'sell'
+      } else if(so.options.diff >= 3.8 &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
+				 s.trend = 'short'
+			  }
+		   }
+		}
+
         if (s.trend !== 'oversold' && s.trend !== 'long' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
@@ -54,6 +89,7 @@ module.exports = function container (get, set, clear) {
             s.signal = 'sell'
           }
         }
+        s.options.currentTrend = s.trend
       }
       cb()
     },
