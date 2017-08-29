@@ -230,7 +230,7 @@ module.exports = function container (get, set, clear) {
                           console.log('Will buy at: ' +  so.willBuyAt)
                           console.log('Diff: ' + so.diff)
                           console.log('Current trend: ' +so.currentTrend)
-                          console.log('Executed trend: ' +  so.currentSignal)
+                          console.log('Executed Signal: ' +  so.currentSignal)
                           console.log('Messsage in case: ' + so.message)
                         }
 
