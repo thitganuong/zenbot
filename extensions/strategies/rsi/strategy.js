@@ -30,31 +30,39 @@ module.exports = function container (get, set, clear) {
 		  s.rsi_high = s.options.rsi_high
 		  console.log('Default rsi_high was set to: ' + (s.rsi_high) + '')
           console.log('Default trend was set to: ' + (s.trend) + '')
-        }
-        if(s.options.NeedRSI == true){
+    }
+    if(s.options.NeedRSI == true){
 			s.rsi_low = s.options.rsi_low
 			console.log('s.rsi_low  set to: ' + (s.rsi_low ) + '')
 			s.rsi_high = s.options.rsi_high
 			console.log('s.rsi_high was set to: ' + (s.rsi_high) + '')
-		}
-	}
+		  }
+	  }
+	  if(s.signal == undefined){
+	    s.signal = s.options.signal
+      console.log('s.signal was set to: ' + (s.signal) + '')
+    }
       if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
 		if (s.trend === 'short') {
 			if(s.signal === 'sell'){
-			  if (so.options.diff >= 2.2 && s.period.rsi >=53 && s.period.rsi<= 55){
+			  if (so.options.diff >= so.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
 				s.trend = 'short'
 				s.signal = 'buy'
+          s.options.currentSignal = s.signal
 			  }
 		   } else if(s.signal === 'buy'){
 			  if (so.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
 				s.trend = 'short'
 				s.signal = 'sell'
-			  } else if(so.options.diff > 0 && so.options.diff <3 &&  s.period.rsi > 60 &&  s.period.rsi < 70 ){ //uptrend len rsi 70 short sell ngat loi
+          s.options.currentSignal = s.signal
+			  } else if(so.options.diff > 0 && so.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
 				 s.trend = 'short'
 				s.signal = 'sell'
-      } else if(so.options.diff >= 3.8 &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
+          s.options.currentSignal = s.signal
+      } else if(so.options.diff >= so.options.diffKeepStop &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
 				 s.trend = 'short'
+          s.options.currentSignal = s.signal
 			  }
 		   }
 		}
@@ -69,6 +77,7 @@ module.exports = function container (get, set, clear) {
             s.trend = 'long'
             s.signal = 'buy'
             s.rsi_high = s.period.rsi
+            s.options.currentSignal = s.signal
           }
         }
         if (s.trend === 'long') {
@@ -76,6 +85,7 @@ module.exports = function container (get, set, clear) {
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
             s.signal = 'sell'
+            s.options.currentSignal = s.signal
           }
         }
         if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
@@ -87,6 +97,7 @@ module.exports = function container (get, set, clear) {
           if (s.period.rsi <= s.rsi_high - s.options.rsi_drop) {
             s.trend = 'short'
             s.signal = 'sell'
+            s.options.currentSignal = s.signal
           }
         }
         s.options.currentTrend = s.trend

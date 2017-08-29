@@ -73,8 +73,8 @@ module.exports = function container (get, set, clear) {
         if (!so.order_type in order_types || !so.order_type) {
           so.order_type = 'maker'
         }
-		so.keep = false
-		so.NeedRSI = false
+		    so.keep = false
+		    so.NeedRSI = false
         so.lowestPrice = 0
         so.willBuyAt = 0
         so.willSellAt = 0
@@ -82,6 +82,11 @@ module.exports = function container (get, set, clear) {
         so.lastSell = 0
         so.diff = 0 
         so.currentTrend = ''
+        so.diffBuyStop = 1.7
+        so.diffKeepStop = 3.5
+        so.signal = ''
+        so.signalOn = false
+        so.currentSignal = ''
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)
@@ -211,6 +216,9 @@ module.exports = function container (get, set, clear) {
                           console.log('9.so.trend: ' +  so.trend)
                           console.log('0.so.rsi_low: ' +  so.rsi_low)
                           console.log('`.so.rsi_high: ' +  so.rsi_high)
+                          console.log('w.so.diffBuyStop: '+ so.diffBuyStop)
+                          console.log('e.so.diffBuyStop: '+ so.diffKeepStop)
+                          console.log('r.so.signal: '+ so.signal)
                           console.log('-----------------------')
                           console.log('Last buy at: ' +  so.lastBuy)
                           console.log('Will sell at: ' +  so.willSellAt)
@@ -218,6 +226,7 @@ module.exports = function container (get, set, clear) {
                           console.log('Will buy at: ' +  so.willBuyAt)
                           console.log('Diff: ' + so.diff)
                           console.log('Current trend: ' +so.currentTrend)
+                          console.log('Executed trend: ' +  so.currentSignal)
                         }
 
                         else if ((key === '1' || key === '1') && !info.ctrl) {
@@ -252,6 +261,19 @@ module.exports = function container (get, set, clear) {
                         }
                         else if ((key === '`' || key === '`') && !info.ctrl) {
                           so.menu = '`'
+                        }
+                        else if ((key === 'w' || key === 'W') && !info.ctrl) {
+                          so.menu = 'w'
+                        }
+                        else if ((key === 'e' || key === 'E') && !info.ctrl) {
+                          so.menu = 'e'
+                        }
+                        else if ((key === 'r' || key === 'R') && !info.ctrl) {
+                          so.signalOn= !so.signalOn
+                          if(so.signal ==true){
+                            so.signal = 'buy'
+                          } else so.signal = 'sell'
+                          console.log('\nSignal: ' + (so.signal) + '\n')
                         }
                         else if ((key === '=' || key === '=') && !info.ctrl) {
                           if(so.menu == 1){
@@ -307,6 +329,14 @@ module.exports = function container (get, set, clear) {
                             if (so.rsi_high == undefined) so.rsi_high = 50
                             so.rsi_high += 1
                           }
+                          else if(so.menu == 'w') {
+                            if (so.diffBuyStop == undefined) so.diffBuyStop = 1.7
+                            so.diffBuyStop += 0.1
+                          }
+                          else if(so.menu == 'e') {
+                            if (so.diffKeepStop == undefined) so.diffKeepStop = 3.5
+                            so.rsi_high += 0.1
+                          }
                         }
                         else if ((key === '-' || key === '-') && !info.ctrl) {
                           if(so.menu == 1){
@@ -354,6 +384,13 @@ module.exports = function container (get, set, clear) {
                           }else if(so.menu == '`') {
                             if (so.rsi_high === undefined) so.rsi_high = 50
                             so.rsi_high -= 1
+                          }else if(so.menu == 'w') {
+                            if (so.diffBuyStop == undefined) so.diffBuyStop = 1.7
+                            so.diffBuyStop -= 0.1
+                          }
+                          else if(so.menu == 'e') {
+                            if (so.diffKeepStop == undefined) so.diffKeepStop = 3.5
+                            so.rsi_high -= 0.1
                           }
                         }
                         else if (info.name === 'c' && info.ctrl) {
