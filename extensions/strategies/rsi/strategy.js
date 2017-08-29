@@ -22,6 +22,7 @@ module.exports = function container (get, set, clear) {
     },
 
     onPeriod: function (s, cb) {
+      if (s.in_preroll) return cb()
 	if (typeof s.period.rsi === 'number') {
 		if(s.trend === undefined){
           s.trend = s.options.trend
@@ -46,7 +47,7 @@ module.exports = function container (get, set, clear) {
           s.options.NeedSignal = false // set done thi tu off
         }
       }
-      if (s.in_preroll) return cb()
+
       if (typeof s.period.rsi === 'number') {
 		if (s.trend === 'short') {
 			if(s.signal === 'sell'){
