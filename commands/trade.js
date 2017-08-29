@@ -217,7 +217,7 @@ module.exports = function container (get, set, clear) {
                           console.log('0.so.rsi_low: ' +  so.rsi_low)
                           console.log('`.so.rsi_high: ' +  so.rsi_high)
                           console.log('w.so.diffBuyStop: '+ so.diffBuyStop)
-                          console.log('e.so.diffBuyStop: '+ so.diffKeepStop)
+                          console.log('e.so.diffKeepStop: '+ so.diffKeepStop)
                           console.log('r.so.signal: '+ so.signal)
                           console.log('-----------------------')
                           console.log('Last buy at: ' +  so.lastBuy)
