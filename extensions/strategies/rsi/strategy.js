@@ -54,19 +54,23 @@ module.exports = function container (get, set, clear) {
 				s.trend = 'short'
 				s.signal = 'buy'
           s.options.currentSignal = s.signal
+          s.options.message = 'Case short buy o doan rsi 52-29, diff > diffbuystop'
 			  }
 		   } else if(s.signal === 'buy'){
 			  if (s.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
 				s.trend = 'short'
 				s.signal = 'sell'
           s.options.currentSignal = s.signal
+          s.options.message = 'Case short sell o doan rsi duoi 50'
 			  } else if(s.options.diff > 0 && s.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
 				 s.trend = 'short'
 				s.signal = 'sell'
           s.options.currentSignal = s.signal
+          s.options.message = 'Case short sell o doan rsi tren 62-75'
       } else if(s.options.diff >= s.options.diffKeepStop &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
 				 s.trend = 'short'
           s.options.currentSignal = s.signal
+          s.options.message = 'Case short keep coin ko sell'
 			  }
 		   }
 		}
@@ -82,6 +86,7 @@ module.exports = function container (get, set, clear) {
             s.signal = 'buy'
             s.rsi_high = s.period.rsi
             s.options.currentSignal = s.signal
+            s.options.message = 'Case oversold buy coin'
           }
         }
         if (s.trend === 'long') {
@@ -90,6 +95,7 @@ module.exports = function container (get, set, clear) {
             s.trend = 'short'
             s.signal = 'sell'
             s.options.currentSignal = s.signal
+            s.options.message = 'Case long sell coin ngat lo'
           }
         }
         if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
@@ -102,6 +108,7 @@ module.exports = function container (get, set, clear) {
             s.trend = 'short'
             s.signal = 'sell'
             s.options.currentSignal = s.signal
+            s.options.message = 'Case overbought sell coin ngat loi'
           }
         }
         s.options.currentTrend = s.trend

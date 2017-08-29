@@ -88,6 +88,7 @@ module.exports = function container (get, set, clear) {
         so.signal = ''
         so.signalOn = false
         so.currentSignal = ''
+        so.message = ''
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)
@@ -230,6 +231,7 @@ module.exports = function container (get, set, clear) {
                           console.log('Diff: ' + so.diff)
                           console.log('Current trend: ' +so.currentTrend)
                           console.log('Executed trend: ' +  so.currentSignal)
+                          console.log('Messsage in case: ' + so.message)
                         }
 
                         else if ((key === '1' || key === '1') && !info.ctrl) {
