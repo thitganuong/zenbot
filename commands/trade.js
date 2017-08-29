@@ -270,7 +270,7 @@ module.exports = function container (get, set, clear) {
                         }
                         else if ((key === 'r' || key === 'R') && !info.ctrl) {
                           so.signalOn= !so.signalOn
-                          if(so.signal ==true){
+                          if(so.signalOn == true){
                             so.signal = 'buy'
                           } else so.signal = 'sell'
                           console.log('\nSignal: ' + (so.signal) + '\n')
