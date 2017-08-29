@@ -46,21 +46,21 @@ module.exports = function container (get, set, clear) {
       if (typeof s.period.rsi === 'number') {
 		if (s.trend === 'short') {
 			if(s.signal === 'sell'){
-			  if (so.options.diff >= so.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
+			  if (so.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
 				s.trend = 'short'
 				s.signal = 'buy'
           s.options.currentSignal = s.signal
 			  }
 		   } else if(s.signal === 'buy'){
-			  if (so.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
+			  if (s.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
 				s.trend = 'short'
 				s.signal = 'sell'
           s.options.currentSignal = s.signal
-			  } else if(so.options.diff > 0 && so.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
+			  } else if(s.options.diff > 0 && s.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
 				 s.trend = 'short'
 				s.signal = 'sell'
           s.options.currentSignal = s.signal
-      } else if(so.options.diff >= so.options.diffKeepStop &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
+      } else if(s.options.diff >= s.options.diffKeepStop &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
 				 s.trend = 'short'
           s.options.currentSignal = s.signal
 			  }
