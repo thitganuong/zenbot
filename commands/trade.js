@@ -74,7 +74,8 @@ module.exports = function container (get, set, clear) {
           so.order_type = 'maker'
         }
 		    so.keep = false
-		    so.NeedRSI = false
+		    so.NeedRSI = false //can set rsi low high thi on flag, done thi off
+        so.NeedSignal = false //can set signal sell/buy thi on flag, done thi off
         so.lowestPrice = 0
         so.willBuyAt = 0
         so.willSellAt = 0
@@ -197,9 +198,9 @@ module.exports = function container (get, set, clear) {
                           so.keep = !so.keep
                           console.log('\nKeep mode: ' + (so.keep ? 'ON' : 'OFF'))
                         }
-                        else if ((key === 'k' || key === 'K') && !info.ctrl) {
-                          so.keep = !so.keep
-                          console.log('\nKeep mode test: ' + (so.keep ? 'ON' : 'OFF') + '\n')
+                        else if ((key === 't' || key === 'T') && !info.ctrl) {
+                          so.NeedSignal = !so.NeedSignal
+                          console.log('\nNeedSignal mode test: ' + (so.NeedSignal ? 'ON' : 'OFF') + '\n')
                         } else if ((key === 'n' || key === 'N') && !info.ctrl) {
                           so.NeedRSI = !so.NeedRSI
                           console.log('\nNeedRSI mode test: ' + (so.NeedRSI ? 'ON' : 'OFF') + '\n')

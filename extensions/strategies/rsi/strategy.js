@@ -36,17 +36,21 @@ module.exports = function container (get, set, clear) {
 			console.log('s.rsi_low  set to: ' + (s.rsi_low ) + '')
 			s.rsi_high = s.options.rsi_high
 			console.log('s.rsi_high was set to: ' + (s.rsi_high) + '')
+      s.options.NeedRSI = false //set done thi tu off
 		  }
 	  }
-	  if(s.signal == undefined){
-	    s.signal = s.options.signal
-      console.log('s.signal was set to: ' + (s.signal) + '')
-    }
+      if(s.options.NeedSignal == true) {
+        if (s.signal == undefined) {
+          s.signal = s.options.signal
+          console.log('s.signal was set to: ' + (s.signal) + '')
+          s.options.NeedSignal = false // set done thi tu off
+        }
+      }
       if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
 		if (s.trend === 'short') {
 			if(s.signal === 'sell'){
-			  if (so.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
+			  if (s.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
 				s.trend = 'short'
 				s.signal = 'buy'
           s.options.currentSignal = s.signal
