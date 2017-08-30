@@ -89,6 +89,7 @@ module.exports = function container (get, set, clear) {
         so.signalOn = false
         so.currentSignal = ''
         so.message = ''
+        so.actionShort = false
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)
@@ -199,6 +200,10 @@ module.exports = function container (get, set, clear) {
                           so.keep = !so.keep
                           console.log('\nKeep mode: ' + (so.keep ? 'ON' : 'OFF'))
                         }
+                        else if ((key === 'y' || key === 'Y') && !info.ctrl) {
+                          so.actionShort = !so.actionShort
+                          console.log('\nactionShort mode: ' + (so.actionShort ? 'ON' : 'OFF'))
+                        }
                         else if ((key === 't' || key === 'T') && !info.ctrl) {
                           so.NeedSignal = !so.NeedSignal
                           console.log('\nNeedSignal mode test: ' + (so.NeedSignal ? 'ON' : 'OFF') + '\n')
@@ -223,6 +228,7 @@ module.exports = function container (get, set, clear) {
                           console.log('[r].so.signal: '+ so.signal)
                           console.log('[n].so.NeedRSI: '+ so.NeedRSI)
                           console.log('[t].so.signal: '+ so.NeedSignal)
+                          console.log('[y]. so.actionShort: '+ so. so.actionShort)
                           console.log('-----------------------')
                           console.log('Last buy at: ' +  so.lastBuy)
                           console.log('Will sell at: ' +  so.willSellAt)
