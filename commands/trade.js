@@ -228,7 +228,7 @@ module.exports = function container (get, set, clear) {
                           console.log('[r].so.signal: '+ so.signal)
                           console.log('[n].so.NeedRSI: '+ so.NeedRSI)
                           console.log('[t].so.signal: '+ so.NeedSignal)
-                          console.log('[y]. so.actionShort: '+ so. so.actionShort)
+                          console.log('[y]. so.actionShort: '+ so.actionShort)
                           console.log('-----------------------')
                           console.log('Last buy at: ' +  so.lastBuy)
                           console.log('Will sell at: ' +  so.willSellAt)
