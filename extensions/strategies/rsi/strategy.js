@@ -22,6 +22,18 @@ module.exports = function container (get, set, clear) {
     },
 
     onPeriod: function (s, cb) {
+     /* if (s.trend === 'long') {
+        if(s.signal === 'buy'){
+          if (s.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 90 && (s.last_trade_worth >= 0.05)) {
+            s.trend = 'short'
+            s.signal = 'sell'
+            s.options.currentSignal = s.signal
+            s.options.message = 'Case long buy o doan rsi 52-29, diff > diffbuystop sell ngat loi'
+            console.log('\nCase 1')
+          }
+        }
+      }*/
+
       if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
         if(s.trend === undefined){
@@ -57,6 +69,7 @@ module.exports = function container (get, set, clear) {
                 s.signal = 'buy'
                 s.options.currentSignal = s.signal
                 s.options.message = 'Case short buy o doan rsi 52-29, diff > diffbuystop'
+                console.log('\nCase 2')
               }
             } else if(s.signal === 'buy'){
               if (s.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
@@ -64,15 +77,18 @@ module.exports = function container (get, set, clear) {
                 s.signal = 'sell'
                 s.options.currentSignal = s.signal
                 s.options.message = 'Case short sell o doan rsi duoi 50'
+                console.log('\nCase 3')
               } else if(s.options.diff > 0 && s.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
                 s.trend = 'short'
                 s.signal = 'sell'
                 s.options.currentSignal = s.signal
                 s.options.message = 'Case short sell o doan rsi tren 62-75'
+                console.log('\nCase 4')
               } else if(s.options.diff >= s.options.diffKeepStop &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
                 s.trend = 'short'
                 s.options.currentSignal = s.signal
                 s.options.message = 'Case short keep coin ko sell'
+                console.log('\nCase 5')
               }
             }
           }
@@ -87,6 +103,7 @@ module.exports = function container (get, set, clear) {
           s.signal = 'sell'
           s.options.currentSignal = s.signal
           s.options.message = 'Case overbought sell coin ngat lo down trend'
+          console.log('\nCase 6')
         }
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
@@ -96,6 +113,7 @@ module.exports = function container (get, set, clear) {
             s.rsi_high = s.period.rsi
             s.options.currentSignal = s.signal
             s.options.message = 'Case oversold buy coin'
+            console.log('\nCase 7')
           }
         }
         if (s.trend === 'long') {
@@ -111,6 +129,7 @@ module.exports = function container (get, set, clear) {
             s.signal = 'sell'
             s.options.currentSignal = s.signal
             s.options.message = 'Case long sell coin ngat lo'
+            console.log('\nCase 8')
           }
         }
         if ((s.trend ==='short' ||s.trend === 'long') && s.period.rsi >= s.options.overbought_rsi) {
@@ -124,6 +143,7 @@ module.exports = function container (get, set, clear) {
             s.signal = 'sell'
             s.options.currentSignal = s.signal
             s.options.message = 'Case overbought sell coin ngat loi'
+            console.log('\nCase 9')
           }
         }
         s.options.currentTrend = s.trend

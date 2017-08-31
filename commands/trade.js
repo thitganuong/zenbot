@@ -87,6 +87,7 @@ module.exports = function container (get, set, clear) {
         so.diffKeepStop = 3.5
         so.signal = ''
         so.signalOn = false
+        so.currentProfit = 0
         so.currentSignal = ''
         so.message = ''
         so.actionShort = false
