@@ -25,12 +25,12 @@ module.exports = function container (get, set, clear) {
       if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
         if(s.trend === undefined){
-              s.trend = s.options.trend
-              s.rsi_low = s.options.rsi_low
-        //  console.log('\nDefault rsi_low  was set to: ' + (s.rsi_low ) + '')
+          s.trend = s.options.trend
+          s.rsi_low = s.options.rsi_low
+          //  console.log('\nDefault rsi_low  was set to: ' + (s.rsi_low ) + '')
           s.rsi_high = s.options.rsi_high
-        //  console.log('Default rsi_high was set to: ' + (s.rsi_high) + '')
-         // console.log('Default trend was set to: ' + (s.trend) + '')
+          //  console.log('Default rsi_high was set to: ' + (s.rsi_high) + '')
+          // console.log('Default trend was set to: ' + (s.trend) + '')
         }
         if(s.options.NeedRSI == true){
           s.rsi_low = s.options.rsi_low
@@ -38,8 +38,8 @@ module.exports = function container (get, set, clear) {
           s.rsi_high = s.options.rsi_high
           console.log('s.rsi_high was set to: ' + (s.rsi_high) + '')
           s.options.NeedRSI = false //set done thi tu off
-          }
         }
+      }
       if(s.options.NeedSignal == true) {
         if (s.signal == undefined) {
           s.signal = s.options.signal
@@ -48,39 +48,45 @@ module.exports = function container (get, set, clear) {
         }
       }
 
-        if (typeof s.period.rsi === 'number') {
-          if( s.options.actionShort == true){
-            if (s.trend === 'short') {
-              if(s.signal === 'sell'){
-                if (s.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
+      if (typeof s.period.rsi === 'number') {
+        if( s.options.actionShort == true){
+          if (s.trend === 'short') {
+            if(s.signal === 'sell'){
+              if (s.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 59){
                 s.trend = 'short'
                 s.signal = 'buy'
-                  s.options.currentSignal = s.signal
-                  s.options.message = 'Case short buy o doan rsi 52-29, diff > diffbuystop'
-                }
-               } else if(s.signal === 'buy'){
-                if (s.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
+                s.options.currentSignal = s.signal
+                s.options.message = 'Case short buy o doan rsi 52-29, diff > diffbuystop'
+              }
+            } else if(s.signal === 'buy'){
+              if (s.options.diff < 0 &&  s.period.rsi< 50){//down trend ngat lo
                 s.trend = 'short'
                 s.signal = 'sell'
-                  s.options.currentSignal = s.signal
-                  s.options.message = 'Case short sell o doan rsi duoi 50'
-                } else if(s.options.diff > 0 && s.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
-                 s.trend = 'short'
+                s.options.currentSignal = s.signal
+                s.options.message = 'Case short sell o doan rsi duoi 50'
+              } else if(s.options.diff > 0 && s.options.diff <3 &&  s.period.rsi > 62 &&  s.period.rsi < 75 ){ //uptrend len rsi 70 short sell ngat loi
+                s.trend = 'short'
                 s.signal = 'sell'
-                  s.options.currentSignal = s.signal
-                  s.options.message = 'Case short sell o doan rsi tren 62-75'
+                s.options.currentSignal = s.signal
+                s.options.message = 'Case short sell o doan rsi tren 62-75'
               } else if(s.options.diff >= s.options.diffKeepStop &&  s.period.rsi > 70 ){ //uptrend len rsi 70  vaf diff manh se keep buy vao
-                 s.trend = 'short'
-                  s.options.currentSignal = s.signal
-                  s.options.message = 'Case short keep coin ko sell'
-                }
-                 }
+                s.trend = 'short'
+                s.options.currentSignal = s.signal
+                s.options.message = 'Case short keep coin ko sell'
               }
+            }
           }
+        }
 
         if (s.trend !== 'oversold' && s.trend !== 'long' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
+        }
+        if (s.trend === 'long' && s.period.rsi <= 40) {
+          s.trend = 'short'
+          s.signal = 'sell'
+          s.options.currentSignal = s.signal
+          s.options.message = 'Case overbought sell coin ngat lo down trend'
         }
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
@@ -94,6 +100,12 @@ module.exports = function container (get, set, clear) {
         }
         if (s.trend === 'long') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
+          /*if (s.period.rsi <= 40) {
+            s.trend = 'short'
+            s.signal = 'sell'
+            s.options.currentSignal = s.signal
+            s.options.message = 'Case long sell coin ngat lo down trend'
+          }*/
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
             s.signal = 'sell'
@@ -101,7 +113,7 @@ module.exports = function container (get, set, clear) {
             s.options.message = 'Case long sell coin ngat lo'
           }
         }
-        if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
+        if ((s.trend ==='short' ||s.trend === 'long') && s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi
           s.trend = 'overbought'
         }
