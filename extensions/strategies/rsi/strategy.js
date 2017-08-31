@@ -82,7 +82,7 @@ module.exports = function container (get, set, clear) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
         }
-        if (s.trend === 'long' && s.period.rsi <= 40) {
+        if (s.trend === 'long' && s.period.rsi <= 40 && s.period.rsi >= 33) {
           s.trend = 'short'
           s.signal = 'sell'
           s.options.currentSignal = s.signal
