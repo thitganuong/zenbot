@@ -94,7 +94,7 @@ module.exports = function container (get, set, clear) {
           }
         }
 
-        if (s.trend !== 'oversold' && s.trend !== 'long' && s.period.rsi <= s.options.oversold_rsi) {
+        if (s.trend !== 'oversold' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
           s.options.isDownTrend = false
@@ -165,7 +165,7 @@ module.exports = function container (get, set, clear) {
         console.log('\ns.options.isDownTrend :' +s.options.isDownTrend)
         console.log('\ns.options.currentTrend:' +s.options.currentTrend)
         console.log(('\ns.options.last_rsi:' +s.options.last_rsi).red)
-       
+
       }
       cb()
     },
