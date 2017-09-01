@@ -125,10 +125,12 @@ module.exports = function container (get, set, clear) {
         
         if (s.trend === 'long'  && s.period.rsi <= 40 && s.period.rsi >= 33) {
           s.trend = 'short'
-          s.signal = 'sell'
-          s.options.currentSignal = s.signal
-          s.options.message = 'Case overbought sell coin ngat lo down trend'
+          //s.signal = 'sell'
+          //s.options.currentSignal = s.signal
+          //s.options.message = 'Case overbought sell coin ngat lo down trend'
         }
+        
+        
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
           if (s.period.rsi >= s.rsi_low + s.options.rsi_recover) {
