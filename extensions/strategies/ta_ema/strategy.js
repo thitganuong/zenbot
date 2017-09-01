@@ -11,7 +11,7 @@ module.exports = function container (get, set, clear) {
       this.option('min_periods', 'min. number of history periods', Number, 52)
       this.option('trend_ema', 'number of periods for trend EMA', Number, 20)
       this.option('neutral_rate', 'avoid trades if abs(trend_ema) under this float (0 to disable, "auto" for a variable filter)', Number, 0.06)
-      this.option('oversold_rsi_periods', 'number of periods for oversold RSI', Number, 20)
+      this.option('oversold_rsi_periods', 'number of periods for oversold RSI', Number, 14)
       this.option('oversold_rsi', 'buy when RSI reaches this value', Number, 30)
     },
 
@@ -24,6 +24,9 @@ module.exports = function container (get, set, clear) {
         if (!s.in_preroll && s.period.oversold_rsi <= s.options.oversold_rsi && !s.oversold && !s.cancel_down) {
           s.oversold = true
           if (s.options.mode !== 'sim' || s.options.verbose) console.log(('\noversold at ' + s.period.oversold_rsi + ' RSI, preparing to buy\n').cyan)
+        } else  if (!s.in_preroll && s.period.oversold_rsi <= s.options.overbought_rsi && !s.oversold && !s.cancel_down) {
+          s.overbought = true
+          if (s.options.mode !== 'sim' || s.options.verbose) console.log(('\noverbought at ' + s.period.overbought_rsi + ' RSI, preparing to buy\n').cyan)
         }
       }
       if (s.period.trend_ema && s.lookback[0] && s.lookback[0].trend_ema) {
@@ -45,6 +48,12 @@ module.exports = function container (get, set, clear) {
           s.signal = 'buy'
           s.cancel_down = true
           return cb()
+        } else if(s.overbought) {
+          s.overbought = false
+          s.trend = 'overbought'
+          s.signal = 'sell'
+          s.cancel_down = true
+          return cb()
         }
       }
       if (typeof s.period.trend_ema_stddev === 'number') {
@@ -53,7 +62,7 @@ module.exports = function container (get, set, clear) {
             s.acted_on_trend = false
           }
           s.trend = 'up'
-          s.signal = !s.acted_on_trend ? 'buy' : null
+          s.signal = !s.acted_on_trend ? 'sell' : null
           s.cancel_down = false
         }
         else if (!s.cancel_down && s.period.trend_ema_rate < (s.period.trend_ema_stddev * -1)) {
