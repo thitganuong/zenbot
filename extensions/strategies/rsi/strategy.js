@@ -24,30 +24,25 @@ module.exports = function container (get, set, clear) {
     onPeriod: function (s, cb) {
       if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
-        if(s.trend === undefined && s.rsi_firstRun !== undefined){
-          /*s.trend = s.options.trend
-          s.rsi_low = s.options.rsi_low
-          //  console.log('\nDefault rsi_low  was set to: ' + (s.rsi_low ) + '')
-          s.rsi_high = s.options.rsi_high
-          //  console.log('Default rsi_high was set to: ' + (s.rsi_high) + '')
-          // console.log('Default trend was set to: ' + (s.trend) + '') */
-          
-          
-          s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
+        if(s.trend === undefined){
+         
+         if(s.rsi_firstRun !== undefined){
+              s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
                
-          if(s.rsi_high < 70){
+              if(s.rsi_high < 70){
                
-             var diffRsi =  s.rsi_high - s.rsi_firstRun
-             if(diffRsi > 10){
-                 s.trend = 'long'
-                 s.signal = 'buy'
+              var diffRsi =  s.rsi_high - s.rsi_firstRun
+              if(diffRsi > 10){
+                  s.trend = 'long'
+                  s.signal = 'buy'
+              }
              }
+          }else{
+            s.rsi_firstRun = s.period.rsi
+            s.rsi_high = s.period.rsi
+            s.rsi_low = 25
           }
           
-        }else{
-              s.rsi_high = s.period.rsi
-              s.rsi_firstRun = s.period.rsi
-              s.rsi_low = 25
         }
         
         
@@ -99,8 +94,10 @@ module.exports = function container (get, set, clear) {
           }
         }
         
-        // rsi_low_track : Track rsi go to oversold if not take a long trend.
+        // rsi_low_track : Track rsi go to oversold if not change to a long trend.
         if(s.trend === 'short'){
+        
+          // Track rsi go to oversold if not change to a long trend.
             if ( s.period.rsi < 40 ){
                s.rsi_low_track = s.period.rsi
             }
@@ -111,11 +108,10 @@ module.exports = function container (get, set, clear) {
               if(diffRsi > 10){
                  s.trend = 'long'
                  s.signal = 'buy'
+                 s.rsi_high = s.period.rsi
                  s.rsi_low_track = undefined
               }
-              
             }
-        
         }
 
         if (s.trend !== 'oversold' && s.trend !== 'long' && s.period.rsi <= s.options.oversold_rsi) {
@@ -123,11 +119,21 @@ module.exports = function container (get, set, clear) {
           s.trend = 'oversold'
         }
         
-        if (s.trend === 'long'  && s.period.rsi <= 40 && s.period.rsi >= 33) {
-          s.trend = 'short'
-          //s.signal = 'sell'
-          //s.options.currentSignal = s.signal
-          //s.options.message = 'Case overbought sell coin ngat lo down trend'
+        
+        if (s.trend === 'long' && s.signal !== 'buy') {
+        
+           // case uptrend nhưng ko overbought xuống lại
+            if(s.rsi_high >= 69  && s.period.rsi <= 45 && s.period.rsi >= 33){
+               s.trend = 'short'
+               s.signal = 'sell'
+               s.options.currentSignal = s.signal
+               s.options.message = 'Case overbought sell coin ngat lo down trend'
+           }else if(s.rsi_high >= 45  && s.period.rsi <= 40 && s.period.rsi >= 33){
+               s.trend = 'short'
+               s.signal = 'sell'
+               s.options.currentSignal = s.signal
+               s.options.message = 'Case overbought sell coin ngat lo down trend'
+           }
         }
         
         
@@ -139,16 +145,12 @@ module.exports = function container (get, set, clear) {
             s.rsi_high = s.period.rsi
             s.options.currentSignal = s.signal
             s.options.message = 'Case oversold buy coin'
+            s.rsi_low_track = undefined
           }
         }
         if (s.trend === 'long') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
-          /*if (s.period.rsi <= 40) {
-            s.trend = 'short'
-            s.signal = 'sell'
-            s.options.currentSignal = s.signal
-            s.options.message = 'Case long sell coin ngat lo down trend'
-          }*/
+         
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
             s.signal = 'sell'
@@ -156,7 +158,7 @@ module.exports = function container (get, set, clear) {
             s.options.message = 'Case long sell coin ngat lo'
           }
         }
-        if ((s.trend ==='short' || s.trend === 'long' || s.trend === undefined) && s.period.rsi >= s.options.overbought_rsi) {
+        if ((s.trend ==='short' || s.trend === 'long' || s.trend === undefined) && s.signal !== 'sell' && s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi
           s.trend = 'overbought'
         }
@@ -182,9 +184,10 @@ module.exports = function container (get, set, clear) {
           color = 'green'
         }
         
-        var sTrend = ' '
+       var sTrend = ' '
     	 var sRsiHight = ' '	
 	     var sRsiLow = ' '	
+				
 				
 	     if (typeof s.rsi_high === 'number'){
 	    	sRsiHight =  n(s.rsi_high).format('0')
@@ -194,12 +197,12 @@ module.exports = function container (get, set, clear) {
 		     sRsiLow = n(s.rsi_low).format('0')
 	     }
 	
-	     if (typeof s.trend !== 'undefined'){
-	      	sTrend = s.trend
-	     }
+	      if(s.trend !== undefined){
+	        sTrend = s.trend
+	      }
 
 
-        cols.push(z(4, n(s.period.rsi).format('0') + ' ' + sTrend , ' ')[color])
+        cols.push(z(4, n(s.period.rsi).format('0') + ' ' + sTrend + ' h: ' + sRsiHight , ' ')[color])
       
       }
       return cols
