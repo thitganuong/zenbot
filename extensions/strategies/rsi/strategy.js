@@ -15,10 +15,23 @@ module.exports = function container (get, set, clear) {
       this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 3)
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_divisor', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
+      this.option('min_periods', 'min. number of history periods', Number, 52)
+      this.option('trend_ema', 'number of periods for trend EMA', Number, 14)//default: 20 ->14
+      this.option('neutral_rate', 'avoid trades if abs(trend_ema) under this float (0 to disable, "auto" for a variable filter)', Number, 'auto')//0.06 -> auto
     },
 
     calculate: function (s) {
       get('lib.rsi')(s, 'rsi', s.options.rsi_periods)
+      get('lib.ta_ema')(s, 'trend_ema', s.options.trend_ema)
+      if (s.period.trend_ema && s.lookback[0] && s.lookback[0].trend_ema) {
+        s.period.trend_ema_rate = (s.period.trend_ema - s.lookback[0].trend_ema) / s.lookback[0].trend_ema * 100
+      }
+      if (s.options.neutral_rate === 'auto') {
+        get('lib.stddev')(s, 'trend_ema_stddev', Math.floor(s.options.trend_ema / 2), 'trend_ema_rate')
+      }
+      else {
+        s.period.trend_ema_stddev = s.options.neutral_rate
+      }
     },
 
     onPeriod: function (s, cb) {
@@ -99,10 +112,32 @@ module.exports = function container (get, set, clear) {
           s.trend = 'oversold'
           s.options.isDownTrend = false
         }
-
-        if (s.period.rsi >= 50){
+        console.log(('\ns.period.trend_ema_rate: '+ s.period.trend_ema_rate).red)
+        console.log(('\ns.period.trend_ema_stddev: '+ s.period.trend_ema_stddev).red)
+        if (s.trend === 'short' || s.trend === 'long' && s.period.trend_ema_rate > s.period.trend_ema_stddev) {
+          /*if (s.options.isDownTrend != false) {
+            s.acted_on_trend = false
+          }*/
           s.options.isDownTrend = false
+          //s.trend = 'up'
+          //s.signal = !s.acted_on_trend ? 'buy' : null
+          s.options.cancel_down = false
+          console.log(('\nUP').red)
+        } else
+         if (s.trend === 'short' || s.trend === 'long' && s.period.trend_ema_rate <0 && Math.abs(s.period.trend_ema_rate) > s.period.trend_ema_stddev) {
+          /*if (s.options.isDownTrend != true) {
+            s.acted_on_trend = false
+          }*/
+          s.options.isDownTrend = true
+          //s.trend = 'down'
+         // s.signal = !s.acted_on_trend ? 'sell' : null
+          s.signal = 'sell'
+          console.log(('\nDOWN').red)
         }
+
+        /*if (s.period.rsi >= 50){
+          s.options.isDownTrend = false
+        }*/
         /*if (s.trend === 'long' && s.options.diff <0 && s.period.rsi <= 40 && s.period.rsi >= 33) {
           s.trend = 'long'
           s.signal = 'sell'
