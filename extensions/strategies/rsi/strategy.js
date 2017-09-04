@@ -94,6 +94,12 @@ module.exports = function container (get, set, clear) {
           }
         }
 
+        if(s.options.isMarkRSI == true){
+            s.options.isMarkRSI = false
+            s.options.markRSI = s.period.rsi
+          console.log(('\nMared RSI! Off MarkFlag').red)
+          console.log(('\nMared RSI at: ' +s.options.markRSI ).red)
+        }
         if (s.trend !== 'oversold' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
@@ -110,6 +116,8 @@ module.exports = function container (get, set, clear) {
               s.options.currentSignal = s.signal
               s.options.message = 'Case buy when down -> up and profit >= 3% '
               console.log(('\nCase buy when down -> up and profit >= 3% ').red)
+              s.options.markRSI = s.period.rsi
+              console.log(('\nMared RSI at: ' +s.options.markRSI ).red)
             }
 
         }
@@ -161,7 +169,25 @@ module.exports = function container (get, set, clear) {
                 s.options.isDownTrend = true
                 s.options.message = 'Case long sell coin ngat lo khi down trend o vung rsi 30-45'
                 console.log(('\nCase long sell coin ngat lo sri down 7').red)
+            } else if(s.period.rsi >=50 && s.period.rsi <= 80){
+               console.log(('\nRSI o dinh nen sell!').red)
+               var diffRSI = s.options.markRSI - s.period.rsi
+                if(diffRSI >= 0 && diffRSI < 3){
+                 //do nothing
+                  console.log(('\nRSI di ngang hoac giam it nhat 3, co the down, cho nen tiep theo').red)
+                  } else if(diffRSI >= 4 && diffRSI < 10){
+                    s.trend = 'long'
+                    s.signal = 'sell'
+                    s.options.currentSignal = s.signal
+                    s.options.isDownTrend = true
+                  console.log(('\nRSI down, sell gap').red)
+                }
+            //  s.signal = 'sell'
+             // s.options.currentSignal = s.signal
+             // s.options.isDownTrend = true
             }
+            s.options.lastBreakOutPrice = s.period.close
+            console.log(('\nSel ngat lo tai lastBreakOutPrice: ' + s.options.lastBreakOutPrice).red)
           }
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
