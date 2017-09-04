@@ -12,7 +12,7 @@ module.exports = function container (get, set, clear) {
       this.option('rsi_periods', 'number of RSI periods', 14)
       this.option('oversold_rsi', 'buy when RSI reaches or drops below this value', Number, 30)
       this.option('overbought_rsi', 'sell when RSI reaches or goes above this value', Number, 82)
-      this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 3)
+      this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 0)//3 -> 0
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_divisor', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
     },
@@ -98,11 +98,27 @@ module.exports = function container (get, set, clear) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
           s.options.isDownTrend = false
+          console.log(('\nCase set to oversold ').red)
         }
 
-        if (s.period.rsi >= 50){
+        if (s.period.rsi - s.options.last_rsi >6 && s.period.rsi >= 53){
           s.options.isDownTrend = false
+          console.log(('\nCase isDownTrend >=53 set isDownTrend = false').red)
+          console.log(('\ns.last_trade_worth: '+s.options.currentOverBuyHoldPct).red)
+            if(s.options.lastTradeType ==='sell' &&s.options.currentOverBuyHoldPct >= 0.03){
+              s.signal = 'buy'
+              s.options.currentSignal = s.signal
+              s.options.message = 'Case buy when down -> up and profit >= 3% '
+              console.log(('\nCase buy when down -> up and profit >= 3% ').red)
+            }
+
         }
+        if(s.options.last_rsi <45 && s.period.rsi <45 & s.period.rsi - s.options.last_rsi >6){
+          s.options.isDownTrend = true
+          console.log(('\nSet s.options.isDownTrend to true').red)
+        }
+
+
         /*if (s.trend === 'long' && s.options.diff <0 && s.period.rsi <= 40 && s.period.rsi >= 33) {
           s.trend = 'long'
           s.signal = 'sell'
@@ -130,13 +146,22 @@ module.exports = function container (get, set, clear) {
             s.options.message = 'Case long sell coin ngat lo down trend'
           }*/
           console.log('\nCurrent s.period.rsi:' +s.period.rsi)
-          if(s.options.last_rsi - s.period.rsi  >= 10 && s.period.rsi >=30){
-            s.trend = 'long'
-            s.signal = 'sell'
-            s.options.currentSignal = s.signal
-            s.options.isDownTrend = true
-            s.options.message = 'Case long sell coin ngat lo sri down 10'
-            console.log(('\nCase long sell coin ngat lo sri down 10').red)
+          if(s.options.lastTradeType ==='buy'&& (s.period.rsi >=30 && s.period.rsi <= 45 || s.period.rsi >=50 && s.period.rsi <= 80)){ //7 8
+            if( s.options.last_rsi - s.period.rsi  >= 7){
+              s.trend = 'long'
+              s.signal = 'sell'
+              s.options.currentSignal = s.signal
+              s.options.isDownTrend = true
+              s.options.message = 'Case long sell coin ngat lo sri down 7'
+              console.log(('\nCase long sell coin ngat lo sri down 7').red)
+            } else if(s.options.isDownTrend == true && s.period.rsi >=30 && s.period.rsi <= 45 && s.options.last_rsi - s.period.rsi  >= 3){
+                s.trend = 'long'
+                s.signal = 'sell'
+                s.options.currentSignal = s.signal
+                s.options.isDownTrend = true
+                s.options.message = 'Case long sell coin ngat lo khi down trend o vung rsi 30-45'
+                console.log(('\nCase long sell coin ngat lo sri down 7').red)
+            }
           }
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
@@ -161,7 +186,9 @@ module.exports = function container (get, set, clear) {
           }
         }
         s.options.currentTrend = s.trend
+        s.options.currentSignal = s.signal
         s.options.last_rsi = s.period.rsi
+        console.log('\ns.options.currentSignal :' +s.options.lastTradeType)
         console.log('\ns.options.isDownTrend :' +s.options.isDownTrend)
         console.log('\ns.options.currentTrend:' +s.options.currentTrend)
         console.log(('\ns.options.last_rsi:' +s.options.last_rsi).red)
