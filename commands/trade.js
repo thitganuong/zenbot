@@ -93,6 +93,7 @@ module.exports = function container (get, set, clear) {
         so.message = ''
         so.actionShort = false
         so.last_rsi = 30
+        so.last_rsi_5 = 0
         so.isDownTrend = false
         so.lastTradeType = ''
         so.lastBreakOutPrice = 0
