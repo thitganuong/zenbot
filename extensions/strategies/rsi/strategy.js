@@ -127,14 +127,26 @@ module.exports = function container (get, set, clear) {
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
           if (s.period.rsi >= s.rsi_low + s.options.rsi_recover) {
-            s.trend = 'long'
-            s.signal = 'buy'
-            s.rsi_high = s.period.rsi
-            s.options.currentSignal = s.signal
-            s.options.message = 'Case oversold buy coin'
-            s.rsi_low_track = undefined
+            
+            //Xử lý mark downtrend
+            if( s.rsi_mark_buy_oversold === undefined){
+              s.rsi_mark_buy_oversold = s.period.rsi
+            }
+            
+            if(s.rsi_mark_buy_oversold!==undefined && s.period.rsi > s.rsi_mark_buy_oversold + 5){
+            
+               s.trend = 'long'
+               s.signal = 'buy'
+               s.rsi_high = s.period.rsi
+               s.options.currentSignal = s.signal
+               s.options.message = 'Case oversold buy coin'
+               s.rsi_low_track = undefined
+               s.rsi_mark_buy_oversold = undefined
+            }
           }
         }
+        
+        
         if (s.trend === 'long') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
          
