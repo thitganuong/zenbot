@@ -9,10 +9,10 @@ module.exports = function container (get, set, clear) {
     getOptions: function () {
       this.option('period', 'period length', String, '2m')
       this.option('min_periods', 'min. number of history periods', Number, 52)
-      this.option('rsi_periods', 'number of RSI periods', 14)
-      this.option('oversold_rsi', 'buy when RSI reaches or drops below this value', Number, 30)
-      this.option('overbought_rsi', 'sell when RSI reaches or goes above this value', Number, 82)
-      this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 3)
+      this.option('rsi_periods', 'number of RSI periods', 200)
+      this.option('oversold_rsi', 'buy when RSI reaches or drops below this value', Number, 46.5)
+      this.option('overbought_rsi', 'sell when RSI reaches or goes above this value', Number, 57)
+      this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 0)
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_dividend', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
     },
@@ -33,6 +33,7 @@ module.exports = function container (get, set, clear) {
             s.trend = 'long'
             s.signal = 'buy'
             s.rsi_high = s.period.rsi
+            console.log(('\noversold ' + s.period.rsi).red)
           }
         }
         if (s.trend === 'long') {
@@ -42,7 +43,7 @@ module.exports = function container (get, set, clear) {
             s.signal = 'sell'
           }
         }
-        if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
+        if ((s.trend === 'long' || s.trend === 'short' )&& s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi
           s.trend = 'overbought'
         }
@@ -51,9 +52,17 @@ module.exports = function container (get, set, clear) {
           if (s.period.rsi <= s.rsi_high - s.options.rsi_drop) {
             s.trend = 'short'
             s.signal = 'sell'
+            console.log(('\noverbought ' + s.period.rsi).red)
           }
         }
       }
+    /*  if (s.period.rsi >= 50) {
+        s.signal = 'buy'
+      } else {
+        s.signal = 'sell'
+      }*/
+
+      console.log(('\ns.period.rsi ' + s.period.rsi).red)
       cb()
     },
 
