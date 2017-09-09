@@ -50,6 +50,12 @@ module.exports = function container (get, set, clear) {
         so.debug = cmd.debug
         so.stats = !cmd.disable_stats
         so.mode = so.paper ? 'paper' : 'live'
+        so.currentRSI14=0
+        so.currentRSI=0
+        so.needBuyatLowerPrice_Long = false
+        so.last_trade_type = ''
+        so.markMaxPriceFromBuy = 0
+        so.diffPrice = 0
         if (cmd.conf) {
           var overrides = require(path.resolve(process.cwd(), cmd.conf))
           Object.keys(overrides).forEach(function (k) {

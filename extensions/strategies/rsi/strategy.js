@@ -19,10 +19,35 @@ module.exports = function container (get, set, clear) {
 
     calculate: function (s) {
       get('lib.rsi')(s, 'rsi', s.options.rsi_periods)
+      get('lib.rsi')(s, 'rsi_5', 14)
     },
 
     onPeriod: function (s, cb) {
+      if (s.in_preroll) return cb()
       if (typeof s.period.rsi === 'number') {
+       /* console.log(('\ns.options.currentRSI14 ' + s.options.currentRSI14).red)
+        console.log(('\nlast signal ' + s.options.last_trade_type).red)
+        console.log(('\nMax Price now: ' + s.options.markMaxPriceFromBuy).red)
+
+        if(s.options.last_trade_type == 'buy' &&  s.options.diffPrice >=4){
+          s.signal = 'sell'
+          console.log(('\nMaxPrice doelsewn 4% SELL at: ' + s.options.diffPrice).red)
+        }
+        if(s.options.last_trade_type == 'sell' /!*&& s.period.rsi >= 51*!/ & s.period.rsi_5 <=12){
+          s.signal = 'buy'
+          console.log(('\nBuy at oversold RSI 14').red)
+        }*/
+
+        /*
+                if (s.trend === 'short') {
+                    if(s.options.last_trade_type == 'sell' && s.period.rsi >= 51 && s.period.rsi_5 >=11 && s.period.rsi_5<=12.5){
+                      s.signal = 'buy'
+                    } else if (s.period.rsi_5 >=65 && s.period.rsi_5 <=100 && s.options.currentRSI14- s.period.rsi_5 >=5 && s.options.last_trade_type == 'buy'){
+                     s.signal = 'sell'
+                    }
+                }
+        */
+
         if (s.trend !== 'oversold' && s.trend !== 'long' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
@@ -36,14 +61,25 @@ module.exports = function container (get, set, clear) {
             console.log(('\noversold ' + s.period.rsi).red)
           }
         }
+
         if (s.trend === 'long') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
+          /*if(s.period.rsi_5 >=75 && s.period.rsi_5 <=100 && s.options.currentRSI14 - s.period.rsi_5 >=5 && s.options.last_trade_type == 'buy'){
+            s.signal = 'sell'
+            s.options.needBuyatLowerPrice_Long = true
+          } else if(s.options.needBuyatLowerPrice_Long == true && s.period.rsi <=50){
+            s.trend = 'short'
+            s.options.needBuyatLowerPrice_Long = false
+          }*/
+
           if (s.period.rsi <= s.rsi_high / s.options.rsi_dividend) {
             s.trend = 'short'
             s.signal = 'sell'
           }
+
         }
-        if ((s.trend === 'long' || s.trend === 'short' )&& s.period.rsi >= s.options.overbought_rsi) {
+
+        if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi
           s.trend = 'overbought'
         }
@@ -61,8 +97,11 @@ module.exports = function container (get, set, clear) {
       } else {
         s.signal = 'sell'
       }*/
-
+      s.options.currentRSI14=s.period.rsi_5
+      s.options.currentRSI=s.period.rsi
+      console.log(('\nTrend: ' + s.trend).red)
       console.log(('\ns.period.rsi ' + s.period.rsi).red)
+      console.log(('\ns.period.rsi_5 ' + s.period.rsi_5).red)
       cb()
     },
 
