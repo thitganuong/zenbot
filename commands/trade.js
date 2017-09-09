@@ -98,6 +98,7 @@ module.exports = function container (get, set, clear) {
         so.lastBreakOutPrice = 0
         so.markRSI = 0
         so.isMarkRSI = false
+        so.rsi_periods_custom = 14
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)
@@ -324,19 +325,19 @@ module.exports = function container (get, set, clear) {
                             so.trendNo +=1
                               if(so.trendNo == 1){
                                 so.trend = 'oversold'
-                                so.rsi_low = 29
+                                so.rsi_low = 46.5//29->46.5
                               } else if(so.trendNo == 2){
                                 so.trend = 'overbought'
-                                so.rsi_high = 85
-                                so.rsi_low = 29
+                                so.rsi_high = 57 //85 -> 57
+                                so.rsi_low = 46.5 //29 ->46.5
                               }else if(so.trendNo == 3){
                                 so.trend = 'long'
-                                so.rsi_high = 40
-                                so.rsi_low = 29
+                                so.rsi_high = 48 //40 ->48
+                                so.rsi_low = 46.5 //29 ->46.5
                               }else if(so.trendNo == 4){
                                 so.trend = 'short'
-                                so.rsi_high = 85
-                                so.rsi_low = 29
+                                so.rsi_high = 57 //85 ->57
+                                so.rsi_low = 46.5 //29 ->46.5
                               } else if (so.trendNo > 4) {
                                 so.trendNo = 0
                                 so.rsi_low = 25

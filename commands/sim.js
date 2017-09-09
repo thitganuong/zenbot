@@ -164,7 +164,8 @@ module.exports = function container (get, set, clear) {
             .replace(/\{\{symbol\}\}/g,  so.selector + ' - zenbot ' + require('../package.json').version)
 
           if (so.filename !== 'none') {
-            var out_target = so.filename || 'simulations/sim_result_' + so.selector +'_' + new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/-/g, '').replace(/:/g, '').replace(/20/, '') + '_UTC.html'
+            //var out_target = so.filename || 'simulations/sim_result_' + so.selector +'_' + new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/-/g, '').replace(/:/g, '').replace(/20/, '') + '_UTC.html'
+            var out_target = so.filename || 'simulations/sim_result_' + so.selector +'.html'
             fs.writeFileSync(out_target, out)
             console.log('wrote', out_target)
           }

@@ -10,8 +10,8 @@ module.exports = function container (get, set, clear) {
       this.option('period', 'period length', String, '2m')
       this.option('min_periods', 'min. number of history periods', Number, 52)
       this.option('rsi_periods', 'number of RSI periods', 14)
-      this.option('oversold_rsi', 'buy when RSI reaches or drops below this value', Number, 30)
-      this.option('overbought_rsi', 'sell when RSI reaches or goes above this value', Number, 82)
+      this.option('oversold_rsi', 'buy when RSI reaches or drops below this value', Number, 46.5)//30 -> 46.5
+      this.option('overbought_rsi', 'sell when RSI reaches or goes above this value', Number, 57)//82 -> 57
       this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 0)//3 -> 0
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_divisor', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
@@ -19,6 +19,7 @@ module.exports = function container (get, set, clear) {
 
     calculate: function (s) {
       get('lib.rsi')(s, 'rsi', s.options.rsi_periods)
+      get('lib.rsi')(s, 'rsi_custom', 14)//14
     },
 
     onPeriod: function (s, cb) {
@@ -103,11 +104,11 @@ module.exports = function container (get, set, clear) {
         if (s.trend !== 'oversold' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
-          s.options.isDownTrend = false
+          //s.options.isDownTrend = false
           console.log(('\nCase set to oversold ').red)
         }
 
-        if (s.period.rsi - s.options.last_rsi >6 && s.period.rsi >= 53){
+        /*if (s.period.rsi - s.options.last_rsi >6 && s.period.rsi >= 53){
           s.options.isDownTrend = false
           console.log(('\nCase isDownTrend >=53 set isDownTrend = false').red)
           console.log(('\ns.last_trade_worth: '+s.options.currentOverBuyHoldPct).red)
@@ -124,7 +125,7 @@ module.exports = function container (get, set, clear) {
         if(s.options.last_rsi <45 && s.period.rsi <45 & s.period.rsi - s.options.last_rsi >6){
           s.options.isDownTrend = true
           console.log(('\nSet s.options.isDownTrend to true').red)
-        }
+        }*/
 
 
         /*if (s.trend === 'long' && s.options.diff <0 && s.period.rsi <= 40 && s.period.rsi >= 33) {
@@ -136,7 +137,7 @@ module.exports = function container (get, set, clear) {
         }*/
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
-          if (s.period.rsi >= s.rsi_low + s.options.rsi_recover && s.options.isDownTrend == false) {
+          if (s.period.rsi >= s.rsi_low + s.options.rsi_recover /*&& s.options.isDownTrend == false*/) {
             s.trend = 'long'
             s.signal = 'buy'
             s.rsi_high = s.period.rsi
@@ -154,7 +155,7 @@ module.exports = function container (get, set, clear) {
             s.options.message = 'Case long sell coin ngat lo down trend'
           }*/
           console.log('\nCurrent s.period.rsi:' +s.period.rsi)
-          if(s.options.lastTradeType ==='buy'&& (s.period.rsi >=30 && s.period.rsi <= 45 || s.period.rsi >=50 && s.period.rsi <= 80)){ //7 8
+          /*if(s.options.lastTradeType ==='buy'&& (s.period.rsi >=30 && s.period.rsi <= 45 || s.period.rsi >=50 && s.period.rsi <= 80)){ //7 8
             if( s.options.last_rsi - s.period.rsi  >= 7){
               s.trend = 'long'
               s.signal = 'sell'
@@ -188,7 +189,7 @@ module.exports = function container (get, set, clear) {
             }
             s.options.lastBreakOutPrice = s.period.close
             console.log(('\nSel ngat lo tai lastBreakOutPrice: ' + s.options.lastBreakOutPrice).red)
-          }
+          }*/
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
             s.signal = 'sell'
@@ -197,7 +198,7 @@ module.exports = function container (get, set, clear) {
             console.log(('\nCase long sell coin ngat lo').red)
           }
         }
-        if ((s.trend ==='short' ||s.trend === 'long') && s.period.rsi >= s.options.overbought_rsi) {
+        if (/*s.trend ==='short' ||*/s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi
           s.trend = 'overbought'
         }
@@ -218,6 +219,7 @@ module.exports = function container (get, set, clear) {
         console.log('\ns.options.isDownTrend :' +s.options.isDownTrend)
         console.log('\ns.options.currentTrend:' +s.options.currentTrend)
         console.log(('\ns.options.last_rsi:' +s.options.last_rsi).red)
+        console.log(('\ns.options.last_rsi_custom:' +s.period.rsi_custom).red)
 
       }
       cb()
