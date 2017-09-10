@@ -16,7 +16,7 @@ module.exports = function container (get, set, clear) {
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_divisor', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
       this.option('min_periods', 'min. number of history periods', Number, 52)
-      this.option('trend_ema', 'number of periods for trend EMA', Number, 72)//default: 20 ->14 -> 36 ->72
+      this.option('trend_ema', 'number of periods for trend EMA', Number, 36)//default: 20 ->14 -> 36 ->72
       this.option('neutral_rate', 'avoid trades if abs(trend_ema) under this float (0 to disable, "auto" for a variable filter)', Number, 'auto')//0.06 -> auto
 
     },
@@ -162,6 +162,7 @@ module.exports = function container (get, set, clear) {
         if (s.trend === 'overbought') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
           if (s.period.rsi <= s.rsi_high - s.options.rsi_drop) {
+            s.options.trendEma = 'down' //case overbought sell để ema có thể mua vào típ theo sau đó.
             s.trend = 'short'
             s.signal = 'sell'
             s.options.currentSignal = s.signal
