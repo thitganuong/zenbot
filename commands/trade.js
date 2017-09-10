@@ -99,6 +99,7 @@ module.exports = function container (get, set, clear) {
         so.markRSI = 0
         so.isMarkRSI = false
         so.rsi_periods_custom = 14
+        so.trendEma = ''
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)

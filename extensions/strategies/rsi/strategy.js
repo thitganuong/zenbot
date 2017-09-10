@@ -15,27 +15,30 @@ module.exports = function container (get, set, clear) {
       this.option('rsi_recover', 'allow RSI to recover this many points before buying', Number, 0)//3 -> 0
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_divisor', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
+      this.option('min_periods', 'min. number of history periods', Number, 52)
+      this.option('trend_ema', 'number of periods for trend EMA', Number, 72)//default: 20 ->14 -> 36 ->72
+      this.option('neutral_rate', 'avoid trades if abs(trend_ema) under this float (0 to disable, "auto" for a variable filter)', Number, 'auto')//0.06 -> auto
+
     },
 
     calculate: function (s) {
       get('lib.rsi')(s, 'rsi', s.options.rsi_periods)
       get('lib.rsi')(s, 'rsi_custom', 14)//14
+      get('lib.ta_ema')(s, 'trend_ema', s.options.trend_ema)
+      if (s.period.trend_ema && s.lookback[0] && s.lookback[0].trend_ema) {
+        s.period.trend_ema_rate = (s.period.trend_ema - s.lookback[0].trend_ema) / s.lookback[0].trend_ema * 100
+      }
+      if (s.options.neutral_rate === 'auto') {
+        get('lib.stddev')(s, 'trend_ema_stddev', Math.floor(s.options.trend_ema / 2), 'trend_ema_rate')
+      }
+      else {
+        s.period.trend_ema_stddev = s.options.neutral_rate
+      }
     },
 
     onPeriod: function (s, cb) {
-     /* if (s.trend === 'long') {
-        if(s.signal === 'buy'){
-          if (s.options.diff >= s.options.diffBuyStop && s.period.rsi >=52 && s.period.rsi<= 90 && (s.last_trade_worth >= 0.05)) {
-            s.trend = 'short'
-            s.signal = 'sell'
-            s.options.currentSignal = s.signal
-            s.options.message = 'Case long buy o doan rsi 52-29, diff > diffbuystop sell ngat loi'
-            console.log('\nCase 1')
-          }
-        }
-      }*/
-
       if (s.in_preroll) return cb()
+
       if (typeof s.period.rsi === 'number') {
         if(s.trend === undefined){
           s.trend = s.options.trend
@@ -60,7 +63,6 @@ module.exports = function container (get, set, clear) {
           s.options.NeedSignal = false // set done thi tu off
         }
       }
-
       if (typeof s.period.rsi === 'number') {
         if( s.options.actionShort == true){
           if (s.trend === 'short') {
@@ -94,47 +96,22 @@ module.exports = function container (get, set, clear) {
             }
           }
         }
-
         if(s.options.isMarkRSI == true){
             s.options.isMarkRSI = false
             s.options.markRSI = s.period.rsi
           console.log(('\nMared RSI! Off MarkFlag').red)
           console.log(('\nMared RSI at: ' +s.options.markRSI ).red)
         }
+
         if (s.trend !== 'oversold' && s.period.rsi <= s.options.oversold_rsi) {
           s.rsi_low = s.period.rsi
           s.trend = 'oversold'
           //s.options.isDownTrend = false
           console.log(('\nCase set to oversold ').red)
         }
+        console.log(('\ns.period.trend_ema_rate: '+ s.period.trend_ema_rate).red)
+        console.log(('\ns.period.trend_ema_stddev: '+ s.period.trend_ema_stddev).red)
 
-        /*if (s.period.rsi - s.options.last_rsi >6 && s.period.rsi >= 53){
-          s.options.isDownTrend = false
-          console.log(('\nCase isDownTrend >=53 set isDownTrend = false').red)
-          console.log(('\ns.last_trade_worth: '+s.options.currentOverBuyHoldPct).red)
-            if(s.options.lastTradeType ==='sell' &&s.options.currentOverBuyHoldPct >= 0.03){
-              s.signal = 'buy'
-              s.options.currentSignal = s.signal
-              s.options.message = 'Case buy when down -> up and profit >= 3% '
-              console.log(('\nCase buy when down -> up and profit >= 3% ').red)
-              s.options.markRSI = s.period.rsi
-              console.log(('\nMared RSI at: ' +s.options.markRSI ).red)
-            }
-
-        }
-        if(s.options.last_rsi <45 && s.period.rsi <45 & s.period.rsi - s.options.last_rsi >6){
-          s.options.isDownTrend = true
-          console.log(('\nSet s.options.isDownTrend to true').red)
-        }*/
-
-
-        /*if (s.trend === 'long' && s.options.diff <0 && s.period.rsi <= 40 && s.period.rsi >= 33) {
-          s.trend = 'long'
-          s.signal = 'sell'
-          s.options.currentSignal = s.signal
-          s.options.message = 'Case oversold sell coin ngat lo down trend'
-          console.log('\nCase long oversold sell coin ngat lo down trend')
-        }*/
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
           if (s.period.rsi >= s.rsi_low + s.options.rsi_recover /*&& s.options.isDownTrend == false*/) {
@@ -146,50 +123,30 @@ module.exports = function container (get, set, clear) {
             console.log(('\nCase oversold buy coin').red)
           }
         }
+        if ((s.trend === 'long' || s.trend === 'short')&&s.period.rsi>=51 && s.period.trend_ema_rate > s.period.trend_ema_stddev) {
+          if (s.options.trendEma !== 'up') {
+            s.acted_on_trend = false
+          }
+          s.options.trendEma = 'up'
+          s.signal = !s.acted_on_trend ? 'buy' : null
+          s.cancel_down = false
+          console.log(('\nEMA Signal: ' + s.signal).red)
+          console.log(('\nTren EMA buy coin').red)
+        }
+        else if ((s.trend === 'long' || s.trend === 'short') &&s.period.rsi>=50 && s.period.trend_ema_rate < (s.period.trend_ema_stddev * -1)) {
+          if (s.options.trendEma !== 'down') {
+            s.acted_on_trend = false
+          }
+          s.options.trendEma = 'down'
+          s.signal = !s.acted_on_trend ? 'sell' : null
+          console.log(('\nEMA Signal: ' + s.signal).red)
+          console.log(('\nDuoi EMA sell coin').red)
+        }
+
         if (s.trend === 'long') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
-          /*if (s.period.rsi <= 40) {
-            s.trend = 'short'
-            s.signal = 'sell'
-            s.options.currentSignal = s.signal
-            s.options.message = 'Case long sell coin ngat lo down trend'
-          }*/
           console.log('\nCurrent s.period.rsi:' +s.period.rsi)
-          /*if(s.options.lastTradeType ==='buy'&& (s.period.rsi >=30 && s.period.rsi <= 45 || s.period.rsi >=50 && s.period.rsi <= 80)){ //7 8
-            if( s.options.last_rsi - s.period.rsi  >= 7){
-              s.trend = 'long'
-              s.signal = 'sell'
-              s.options.currentSignal = s.signal
-              s.options.isDownTrend = true
-              s.options.message = 'Case long sell coin ngat lo sri down 7'
-              console.log(('\nCase long sell coin ngat lo sri down 7').red)
-            } else if(s.options.isDownTrend == true && s.period.rsi >=30 && s.period.rsi <= 45 && s.options.last_rsi - s.period.rsi  >= 3){
-                s.trend = 'long'
-                s.signal = 'sell'
-                s.options.currentSignal = s.signal
-                s.options.isDownTrend = true
-                s.options.message = 'Case long sell coin ngat lo khi down trend o vung rsi 30-45'
-                console.log(('\nCase long sell coin ngat lo sri down 7').red)
-            } else if(s.period.rsi >=50 && s.period.rsi <= 80){
-               console.log(('\nRSI o dinh nen sell!').red)
-               var diffRSI = s.options.markRSI - s.period.rsi
-                if(diffRSI >= 0 && diffRSI < 3){
-                 //do nothing
-                  console.log(('\nRSI di ngang hoac giam it nhat 3, co the down, cho nen tiep theo').red)
-                  } else if(diffRSI >= 4 && diffRSI < 10){
-                    s.trend = 'long'
-                    s.signal = 'sell'
-                    s.options.currentSignal = s.signal
-                    s.options.isDownTrend = true
-                  console.log(('\nRSI down, sell gap').red)
-                }
-            //  s.signal = 'sell'
-             // s.options.currentSignal = s.signal
-             // s.options.isDownTrend = true
-            }
-            s.options.lastBreakOutPrice = s.period.close
-            console.log(('\nSel ngat lo tai lastBreakOutPrice: ' + s.options.lastBreakOutPrice).red)
-          }*/
+
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
             s.signal = 'sell'
@@ -198,7 +155,7 @@ module.exports = function container (get, set, clear) {
             console.log(('\nCase long sell coin ngat lo').red)
           }
         }
-        if (/*s.trend ==='short' ||*/s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
+        if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi
           s.trend = 'overbought'
         }
@@ -216,7 +173,7 @@ module.exports = function container (get, set, clear) {
         s.options.currentSignal = s.signal
         s.options.last_rsi = s.period.rsi
         console.log('\ns.options.currentSignal :' +s.options.lastTradeType)
-        console.log('\ns.options.isDownTrend :' +s.options.isDownTrend)
+        //console.log('\ns.options.isDownTrend :' +s.options.isDownTrend)
         console.log('\ns.options.currentTrend:' +s.options.currentTrend)
         console.log(('\ns.options.last_rsi:' +s.options.last_rsi).red)
         console.log(('\ns.options.last_rsi_custom:' +s.period.rsi_custom).red)
