@@ -16,7 +16,7 @@ module.exports = function container (get, set, clear) {
       this.option('rsi_drop', 'allow RSI to fall this many points before selling', Number, 0)
       this.option('rsi_divisor', 'sell when RSI reaches high-water reading divided by this value', Number, 2)
       this.option('min_periods', 'min. number of history periods', Number, 52)
-      this.option('trend_ema', 'number of periods for trend EMA', Number, 36)//default: 20 ->14 -> 36 ->72
+      this.option('trend_ema', 'number of periods for trend EMA', Number, 14)//default: 20 ->14 -> 36 ->72
       this.option('neutral_rate', 'avoid trades if abs(trend_ema) under this float (0 to disable, "auto" for a variable filter)', Number, 'auto')//0.06 -> auto
 
     },
@@ -111,7 +111,7 @@ module.exports = function container (get, set, clear) {
         }
         console.log(('\ns.period.trend_ema_rate: '+ s.period.trend_ema_rate).red)
         console.log(('\ns.period.trend_ema_stddev: '+ s.period.trend_ema_stddev).red)
-
+        console.log(('\ns.options.canSellTrendEma: '+ s.options.canSellTrendEma).red)
         if (s.trend === 'oversold') {
           s.rsi_low = Math.min(s.rsi_low, s.period.rsi)
           if (s.period.rsi >= s.rsi_low + s.options.rsi_recover /*&& s.options.isDownTrend == false*/) {
@@ -119,25 +119,37 @@ module.exports = function container (get, set, clear) {
             s.signal = 'buy'
             s.rsi_high = s.period.rsi
             s.options.currentSignal = s.signal
+            s.options.canBuyRSI14 = true
             s.options.message = 'Case oversold buy coin'
             console.log(('\nCase oversold buy coin').red)
           }
         }
+
+        if ((s.options.canBuyRSI14 == true || s.options.canBuyRSI14 == undefined)&& (s.trend === 'long' || s.trend === 'short')&& s.period.rsi_custom <= 30) {
+          s.signal = 'buy'
+          s.options.canSellTrendEma = false
+          //s.options.canBuyRSI14 = false
+          console.log(('\nCase oversold rsi14 buy ').red)
+        }
+
         if ((s.trend === 'long' || s.trend === 'short')&&s.period.rsi>=51 && s.period.trend_ema_rate > s.period.trend_ema_stddev) {
           if (s.options.trendEma !== 'up') {
             s.acted_on_trend = false
           }
           s.options.trendEma = 'up'
+          s.options.canSellTrendEma = true
           s.signal = !s.acted_on_trend ? 'buy' : null
           s.cancel_down = false
           console.log(('\nEMA Signal: ' + s.signal).red)
           console.log(('\nTren EMA buy coin').red)
         }
-        else if ((s.trend === 'long' || s.trend === 'short') &&s.period.rsi>=50 && s.period.trend_ema_rate < (s.period.trend_ema_stddev * -1)) {
+        else if (s.options.canSellTrendEma == true &&(s.trend === 'long' || s.trend === 'short') /*&& s.period.rsi>=50 */&& s.period.trend_ema_rate < (s.period.trend_ema_stddev * -1)&& s.options.lastTradeType =='buy') {
           if (s.options.trendEma !== 'down') {
             s.acted_on_trend = false
           }
           s.options.trendEma = 'down'
+          s.options.canBuyRSI14 = true
+          s.options.canSellTrendEma = false
           s.signal = !s.acted_on_trend ? 'sell' : null
           console.log(('\nEMA Signal: ' + s.signal).red)
           console.log(('\nDuoi EMA sell coin').red)
