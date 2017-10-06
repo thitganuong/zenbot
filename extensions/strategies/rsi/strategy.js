@@ -120,6 +120,7 @@ module.exports = function container (get, set, clear) {
             s.rsi_high = s.period.rsi
             s.options.currentSignal = s.signal
             s.options.canBuyRSI14 = true
+            s.options.isOneTime = true
             s.options.message = 'Case oversold buy coin'
             console.log(('\nCase oversold buy coin').red)
           }
@@ -127,6 +128,7 @@ module.exports = function container (get, set, clear) {
 
         if(s.options.onEma == undefined){
           s.options.onEma = true
+          s.options.countPeriod = 0
         }
 
         // if ((s.options.canBuyRSI14 == true || s.options.canBuyRSI14 == undefined)&&s.period.rsi>=51&& (s.trend === 'long' || s.trend === 'short')&& s.period.rsi_custom <= 30) {
@@ -166,6 +168,7 @@ module.exports = function container (get, set, clear) {
             s.signal = !s.acted_on_trend ? 'sell' : null
             if (s.signal === 'sell') {
               s.options.onEma = false
+              s.options.countPeriod = 0
             }
             console.log(('\nEMA Signal: ' + s.signal).red)
             console.log(('\nDuoi EMA sell coin').red)
@@ -175,7 +178,7 @@ module.exports = function container (get, set, clear) {
         if (s.trend === 'long') {
           s.rsi_high = Math.max(s.rsi_high, s.period.rsi)
           console.log('\nCurrent s.period.rsi:' +s.period.rsi)
-
+          console.log('\nlongTrendNeedReBuy:' + s.options.longTrendNeedReBuy)
           if (s.period.rsi <= s.rsi_high / s.options.rsi_divisor) {
             s.trend = 'short'
             s.signal = 'sell'
@@ -183,6 +186,27 @@ module.exports = function container (get, set, clear) {
             s.options.message = 'Case long sell coin ngat lo'
             console.log(('\nCase long sell coin ngat lo').red)
           }
+          //long trend bị down cắt xuống ema nên sell ngay, sau đó mua vào ngay.
+          if(s.options.isOneTime){
+            if(s.options.longTrendNeedReBuy == true){
+              s.signal = 'buy'
+              s.options.longTrendNeedReBuy = false
+              s.options.isOneTime = false
+              console.log(('\nLONG TREND Duoi EMA sell sau do buy ngay').red)
+            } else if (s.period.trend_ema_rate < /*(s.period.trend_ema_stddev * -1)*/ 0 && s.options.lastTradeType == 'buy'){
+              if (s.options.trendEma !== 'down') {
+                s.acted_on_trend = false
+              }
+              s.options.trendEma = 'down'
+              s.signal = !s.acted_on_trend ? 'sell' : null
+              if (s.signal === 'sell') {
+                s.options.longTrendNeedReBuy = true
+                console.log(('\nLONG TREND Duoi EMA sell coin').red)
+              }
+              console.log(('\nEMA Signal: ' + s.signal).red)
+            }
+          }
+          //long trend bị down cắt xuống ema nên sell ngay, sau đó mua vào ngay.
         }
         if (s.trend === 'long' && s.period.rsi >= s.options.overbought_rsi) {
           s.rsi_high = s.period.rsi

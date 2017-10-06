@@ -53,27 +53,7 @@ module.exports = function container (get, set, clear) {
         so.debug = cmd.debug
         so.stats = !cmd.disable_stats
         so.mode = so.paper ? 'paper' : 'live'
-        if (cmd.conf) {
-          var overrides = require(path.resolve(process.cwd(), cmd.conf))
-          Object.keys(overrides).forEach(function (k) {
-            so[k] = overrides[k]
-          })
-        }
-        so.selector = get('lib.normalize-selector')(so.selector || selector || c.selector)
-        var exchange_id = so.selector.split('.')[0]
-        var product_id = so.selector.split('.')[1]
-        var exchange = get('exchanges.' + exchange_id)
-        if (!exchange) {
-          console.error('cannot trade ' + so.selector + ': exchange not implemented')
-          process.exit(1)
-        }
-        var engine = get('lib.engine')(s)
-
-        var order_types = ['maker', 'taker']
-        if (!so.order_type in order_types || !so.order_type) {
-          so.order_type = 'maker'
-        }
-		    so.keep = false
+        so.keep = false
 		    so.NeedRSI = false //can set rsi low high thi on flag, done thi off
         so.NeedSignal = false //can set signal sell/buy thi on flag, done thi off
         so.lowestPrice = 0
@@ -81,7 +61,7 @@ module.exports = function container (get, set, clear) {
         so.willSellAt = 0
         so.lastBuy = 0
         so.lastSell = 0
-        so.diff = 0 
+        so.diff = 0
         so.currentTrend = ''
         so.diffBuyStop = 1.7
         so.diffKeepStop = 3.5
@@ -104,6 +84,29 @@ module.exports = function container (get, set, clear) {
         so.canBuyRSI14 = false
         so.countPeriod = 0
         so.onEma = true
+        so.longTrendNeedReBuy = false
+        so.isOneTime = true
+        if (cmd.conf) {
+          var overrides = require(path.resolve(process.cwd(), cmd.conf))
+          Object.keys(overrides).forEach(function (k) {
+            so[k] = overrides[k]
+          })
+        }
+        so.selector = get('lib.normalize-selector')(so.selector || selector || c.selector)
+        var exchange_id = so.selector.split('.')[0]
+        var product_id = so.selector.split('.')[1]
+        var exchange = get('exchanges.' + exchange_id)
+        if (!exchange) {
+          console.error('cannot trade ' + so.selector + ': exchange not implemented')
+          process.exit(1)
+        }
+        var engine = get('lib.engine')(s)
+
+        var order_types = ['maker', 'taker']
+        if (!so.order_type in order_types || !so.order_type) {
+          so.order_type = 'maker'
+        }
+
         var db_cursor, trade_cursor
         var query_start = tb().resize(so.period).subtract(so.min_periods * 2).toMilliseconds()
         var days = Math.ceil((new Date().getTime() - query_start) / 86400000)
@@ -148,7 +151,7 @@ module.exports = function container (get, set, clear) {
               opts.query.time = {$gt: db_cursor}
             }
             else {
-              trade_cursor = s.exchange.getCursor(query_start) 
+              trade_cursor = s.exchange.getCursor(query_start)
               opts.query.time = {$gte: query_start}
             }
             get('db.trades').select(opts, function (err, trades) {
