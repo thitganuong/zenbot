@@ -84,6 +84,10 @@ module.exports = function container (get, set, clear) {
         so.canBuyRSI14 = false
         so.countPeriod = 0
         so.onEma = true
+        so.countPeriodOverbought = 0
+        so.onEmaOverbought = false
+        so.countPeriodOverSold = 0
+        so.onEmaOverSold = false
         so.longTrendNeedReBuy = false
         so.isOneTime = true
         if (cmd.conf) {
