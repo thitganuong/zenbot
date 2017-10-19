@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="node_modules/forex.analytics/lib/ta-lib/src/tools/gen_code/java"/>
+	<classpathentry kind="src" path="node_modules/talib/src/lib/src/tools/gen_code/java"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

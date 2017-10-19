@@ -97,6 +97,8 @@ module.exports = function container (get, set, clear) {
         so.onEmaOverSold = false
         so.longTrendNeedReBuy = false
         so.isOneTime = true
+        so.countSleep = 0
+        so.changeBuy = false 
         if (cmd.conf) {
           var overrides = require(path.resolve(process.cwd(), cmd.conf))
           Object.keys(overrides).forEach(function (k) {

@@ -127,6 +127,10 @@ module.exports = function container (get, set, clear) {
           	 s.options.DownTrendReTest =  false 
           	 s.options.countPeriodConstant =  40
           }
+          if (s.options.countSleep == undefined){
+        	  		s.options.countSleep = 0
+        	  		s.options.changeBuy = false 
+          }
 
         if (s.trend !== 'oversold' && s.period.rsi <= s.options.oversold_rsi && !s.options.DownTrendReTest) {
           s.rsi_low = s.period.rsi
@@ -142,6 +146,7 @@ module.exports = function container (get, set, clear) {
           if (s.period.rsi >= s.rsi_low + s.options.rsi_recover /*&& s.options.isDownTrend == false*/) {
             s.trend = 'long'
             s.signal = 'buy'
+            	
             s.rsi_high = s.period.rsi
             s.options.currentSignal = s.signal
             s.options.canBuyRSI14 = true
@@ -175,6 +180,13 @@ module.exports = function container (get, set, clear) {
             s.options.onEma = true
           }
         }
+        
+        if(s.options.countSleep == 0){
+            if(s.options.countSleep <= 200){//40
+            	  s.options.countSleep = s.options.countSleep + 1
+              console.log(('\ns.options.countSleep ' + s.options.countSleep).red)
+            }
+          }
         console.log(('\ns.options.onEmaOverSold ' + s.options.onEmaOverSold).red)
         console.log(('\ns.options.DownTrendReTest ' + s.options.DownTrendReTest).red)
         if(s.options.onEmaOverSold == false){
@@ -192,7 +204,7 @@ module.exports = function container (get, set, clear) {
 //          			s.options.onEmaOverSold = true
 //          			console.log(('\n dang count 40 nen nhung rsi14 oversold nen buy ngay').red)
 //          		}
-              	if(s.options.countPeriodOverSold >= 5 && s.options.DownTrendReTest == false){
+              	if(s.options.countPeriodOverSold >= 10 && s.options.DownTrendReTest == false){
               		console.log(('\nSet s.options.currentPrice ' + s.options.currentPrice).red)
               		console.log(('\nSet s.options.overSoldPrice ' + s.options.overSoldPrice).red)
 	              if ( s.options.currentPrice < s.options.overSoldPrice){
@@ -276,7 +288,7 @@ module.exports = function container (get, set, clear) {
 		             }
 		             s.options.trendEma = 'up'
 		            	 
-		            	if((s.period.rsi_custom <= 31 && s.period.rsi_custom <= 40) /*|| (s.period.trend_ema_rate > s.period.trend_ema_stddev)*/){
+		            	if(s.period.rsi_custom <= 31 && s.period.rsi_custom <= 40 /*|| (s.period.trend_ema_rate > s.period.trend_ema_stddev)*/){
 		              s.signal = 'buy'
 		            	  s.options.longTrendNeedReBuy = false
 		            	  s.options.onEmaOverSold = false 
@@ -342,7 +354,18 @@ module.exports = function container (get, set, clear) {
         console.log('\ns.options.currentTrend:' +s.options.currentTrend)
         console.log(('\ns.options.last_rsi:' +s.options.last_rsi).red)
         console.log(('\ns.options.last_rsi_custom:' +s.period.rsi_custom).red)
-
+        if( s.options.currentSignal == 'sell'){
+        		s.options.changeBuy = false 
+        		//s.options.countSleep = 0
+        } else if (s.options.currentSignal == 'buy'){
+        		s.options.changeBuy = true 
+        		s.options.countSleep = 0
+        }
+        if(s.options.countSleep >=200 ){
+        		s.signal = 'buy'
+        			s.options.countSleep = 0
+        			console.log(('\nForce BUY! at period ' +s.options.countSleep).red)
+        }
       }
       cb()
     },
