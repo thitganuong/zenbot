@@ -181,12 +181,13 @@ module.exports = function container (get, set, clear) {
           }
         }
         
-        if(s.options.countSleep == 0){
-            if(s.options.countSleep <= 200){//40
+        console.log(('\ns.options.countSleep ' + s.options.countSleep).red)
+            if(s.options.countSleep <= 200 && s.options.currentSignal === 'sell'){
             	  s.options.countSleep = s.options.countSleep + 1
               console.log(('\ns.options.countSleep ' + s.options.countSleep).red)
+            } else {
+            	 console.log(('\ns.options.countSleep > 200' + s.options.countSleep).red)
             }
-          }
         console.log(('\ns.options.onEmaOverSold ' + s.options.onEmaOverSold).red)
         console.log(('\ns.options.DownTrendReTest ' + s.options.DownTrendReTest).red)
         if(s.options.onEmaOverSold == false){
@@ -353,20 +354,20 @@ module.exports = function container (get, set, clear) {
         //console.log('\ns.options.isDownTrend :' +s.options.isDownTrend)
         console.log('\ns.options.currentTrend:' +s.options.currentTrend)
         console.log(('\ns.options.last_rsi:' +s.options.last_rsi).red)
-        console.log(('\ns.options.last_rsi_custom:' +s.period.rsi_custom).red)
-        if( s.options.currentSignal == 'sell'){
-        		s.options.changeBuy = false 
-        		//s.options.countSleep = 0
-        } else if (s.options.currentSignal == 'buy'){
-        		s.options.changeBuy = true 
-        		s.options.countSleep = 0
-        }
-        if(s.options.countSleep >=200 ){
-        		s.signal = 'buy'
-        			s.options.countSleep = 0
-        			console.log(('\nForce BUY! at period ' +s.options.countSleep).red)
-        }
+        console.log(('\ns.options.last_rsi_custom:' +s.period.rsi_custom).red)      
       }
+//      if( s.options.currentSignal === 'sell'){
+//  		s.options.changeBuy = false 
+//  		//s.options.countSleep = 0
+//	  } else if (s.options.currentSignal === 'buy'){
+//	  		s.options.changeBuy = true 
+//	  		s.options.countSleep = 0
+//	  }
+//	  if(s.options.countSleep >=200 ){
+//	  		s.signal = 'buy'
+//	  			s.options.countSleep = 0
+//	  			console.log(('\nForce BUY! at period ' +s.options.countSleep).red)
+//	  }
       cb()
     },
 
